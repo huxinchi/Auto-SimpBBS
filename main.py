@@ -26,7 +26,7 @@ def check_and_claim_redpacket():
                 #如果没有，那么翻到下一页
                 dqpage+=1
                 
-            time.sleep(0.3)  #延迟时间
+            time.sleep(0.1)  #延迟时间
             #如果要回看
             if reset:
                 #保存目前值
@@ -64,9 +64,6 @@ def check_and_claim_redpacket():
                 #没有解决红包雨的问题
                 if packet["type"]=="rain":
                     print("垃圾红包雨")
-                    if packet["currencies"][0]["currencyId"]==1:
-                        #提示
-                        print("快上线，金粒的")
                     continue
                 #如果抢不了
                 if not packet["userInfo"]["canClaim"]:
@@ -78,9 +75,9 @@ def check_and_claim_redpacket():
                 if dqpacknr==1:
                     dqpacknr="金粒"
                 elif dqpacknr==2:
-                    dqpacknr="钻石"
+                    dqpacknr="钻石，不是没启用吗，你是怎么抢到的，你卡bug了？"
                 elif dqpacknr==3:
-                    dqpacknr="垃圾g币"#给出提示信息
+                    dqpacknr="垃圾g币，不是删了吗，你是怎么抢到的，你卡bug了？"#给出提示信息
                 print(f"发现可领取红包，信息：{packet["message"]},剩余：{packet["remaining"]},内容：{dqpacknr}*{packet["currencies"][0]["amount"]}")
                 
                 # 尝试领取红包
@@ -100,9 +97,9 @@ def check_and_claim_redpacket():
                 if dqpacknr==1:
                     dqpacknr="金粒"
                 elif dqpacknr==2:
-                    dqpacknr="钻石"
+                    dqpacknr="钻石，不是没启用吗，你是怎么抢到的，你卡bug了？"
                 elif dqpacknr==3:
-                    dqpacknr="垃圾g币"
+                    dqpacknr="垃圾g币，不是删了吗，你是怎么抢到的，你卡bug了？"#给出提示信息
                 print(f"领取结果: {dqpacknr}*{result["amount"]}")
             
         
@@ -142,9 +139,14 @@ print(f"邮箱:{email}")
 print(f"组:{groups_str}")
 print(f"登录时间:{formatted_date}")
 
-print(f"你当前有{requests.get("https://simpbbs.gonm2.cn/api/user/balance?currencyId=1",headers=headers).json()["balance"]}金粒")#调用api给出当前余额，垃圾g币就不用获取了
-inputt=input("输入选项:\n1:自动抢红包\n2:红包信息查询\n选择:")
+print(f"你当前有{requests.get("https://simpbbs.gonm2.cn/api/user/balance?currencyId=1",headers=headers).json()["balance"]}金粒")#调用api给出当前余额
+inputt=input("输入选项:\n1:自动抢红包\n2:红包信息查询\n3:查询账户是否存在\n选择:")
 if inputt=="1":
     check_and_claim_redpacket()
 elif inputt=="2":
     获取红包信息()
+elif inputt=="3":
+    if requests.get(f"https://simpbbs.gonm2.cn/api/user/validate-recipient?username={input("请输入目标账户名:")}",headers=headers).json()["reason"]=="not_found":
+        print("目标不存在")
+    else:
+        print("目标存在")
