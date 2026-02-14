@@ -2,6 +2,8 @@ import requests
 import time
 import json
 from datetime import datetime
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)#有时候ssl证书会抽风，禁用掉验证
 import collections
 # 准备请求头
 headers = {
@@ -26,7 +28,7 @@ def check_and_claim_redpacket():
                 #如果没有，那么翻到下一页
                 dqpage+=1
                 
-            time.sleep(0.1)  #延迟时间
+            time.sleep(1)  #延迟时间
             #如果要回看
             if reset:
                 #保存目前值
@@ -35,7 +37,7 @@ def check_and_claim_redpacket():
                 dqpage=1
             print(f"状态正常，查询第{dqpage}页的数据，共{maxpage}页,当前是否查询1页：{reset}")
             # 获取红包列表
-            response = requests.get(f"https://simpbbs.gonm2.cn/api/redpackets/hall?page={dqpage}&status=active&sortBy=createdAt",headers=headers)
+            response = requests.get(f"https://simpbbs.gonm2.cn/api/redpackets/hall?page={dqpage}&status=active&sortBy=createdAt",headers=headers,verify=False)
             if reset:
                 #恢复保存的值
                 dqpage=tempdqpage
@@ -47,6 +49,7 @@ def check_and_claim_redpacket():
             # 遍历红包列表，查找可领取的红包
             for packet in red_packets:
                 #获取包id
+                
                 packet_id = packet["id"]
                 #跳出标志，本来可以用调试器实现jmp，但是为了在3.14-使用，使用跳出标志
                 cf=0
@@ -84,7 +87,8 @@ def check_and_claim_redpacket():
                 resp_claim = requests.post(
                     "https://simpbbs.gonm2.cn/api/redpackets/claim",
                     data={"id": packet_id},
-                    headers=headers
+                    headers=headers,
+                    verify=False
                 )
                 result = resp_claim.json()
                     
@@ -113,10 +117,13 @@ def 获取红包信息():
         print(f"uid:{i["user"]["id"]},名称:{i["user"]["name"]},金额:{i["amount"]}")#打印
 
 # 1. 解析JSON数据
-data = requests.get("https://simpbbs.gonm2.cn/api/_auth/session",headers=headers).json()
-
+try:
+    data = requests.get("https://simpbbs.gonm2.cn/api/_auth/session",headers=headers,verify=False).json()
+    uid = data['user']['id']
+except RequestsJSONDecodeError:
+    #如果请求不了或者请求没有结果就提示输入cookie
+    print("请在文件里输入cookie")
 # 2. 提取所需字段
-uid = data['user']['id']
 uuid = data['id']
 name = data['user']['name']
 email = data['user']['email']
@@ -139,14 +146,14 @@ print(f"邮箱:{email}")
 print(f"组:{groups_str}")
 print(f"登录时间:{formatted_date}")
 
-print(f"你当前有{requests.get("https://simpbbs.gonm2.cn/api/user/balance?currencyId=1",headers=headers).json()["balance"]}金粒")#调用api给出当前余额
+print(f"你当前有{requests.get("https://simpbbs.gonm2.cn/api/user/balance?currencyId=1",headers=headers,verify=False).json()["balance"]}金粒")#调用api给出当前余额
 inputt=input("输入选项:\n1:自动抢红包\n2:红包信息查询\n3:查询账户是否存在\n选择:")
 if inputt=="1":
     check_and_claim_redpacket()
 elif inputt=="2":
     获取红包信息()
 elif inputt=="3":
-    if requests.get(f"https://simpbbs.gonm2.cn/api/user/validate-recipient?username={input("请输入目标账户名:")}",headers=headers).json()["reason"]=="not_found":
+    if requests.get(f"https://simpbbs.gonm2.cn/api/user/validate-recipient?username={input("请输入目标账户名:")}",headers=headers,verify=False).json()["reason"]=="not_found":
         print("目标不存在")
     else:
         print("目标存在")
