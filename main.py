@@ -120,7 +120,7 @@ def 获取红包信息():
 try:
     data = requests.get("https://simpbbs.gonm2.cn/api/_auth/session",headers=headers,verify=False).json()
     uid = data['user']['id']
-except requests.exceptions.JSONDecodeErro:
+except requests.exceptions.JSONDecodeError:
     #如果请求不了或者请求没有结果就提示输入cookie
     print("请在文件里输入cookie")
 # 2. 提取所需字段
