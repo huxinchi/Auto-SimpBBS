@@ -5,13 +5,20 @@ from datetime import datetime
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)#有时候ssl证书会抽风，禁用掉验证
 import collections
+
+
+
+
 # 准备请求头
 headers = {
-    "Cookie": ""
-}
+  "Cookie": "",
+  "Accept-Language":"zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7",
+  "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36"
+}#除了cookie都没用，但是还加一下
 #准备红包缓存队列
 okhongbao=collections.deque(maxlen=1000)
-def check_and_claim_redpacket():
+#默认密码适用于你知道密码了，但是红包还没发的情况
+def check_and_claim_redpacket(有默认密码=False,默认密码=""):
     #初始化
     dqpage=1
     reset=True
@@ -28,7 +35,7 @@ def check_and_claim_redpacket():
                 #如果没有，那么翻到下一页
                 dqpage+=1
                 
-            time.sleep(1)  #延迟时间
+            time.sleep(0.3)  #延迟时间
             #如果要回看
             if reset:
                 #保存目前值
@@ -73,7 +80,9 @@ def check_and_claim_redpacket():
                     print("抢不了的红包")
                     #跳出
                     continue
-                
+                if packet["hasPassword"] and not 有默认密码:
+                    print("有密码，你不讲武德")
+                    continue
                 dqpacknr=packet["currencies"][0]["currencyId"]
                 if dqpacknr==1:
                     dqpacknr="金粒"
@@ -82,19 +91,30 @@ def check_and_claim_redpacket():
                 elif dqpacknr==3:
                     dqpacknr="垃圾g币，不是删了吗，你是怎么抢到的，你卡bug了？"#给出提示信息
                 print(f"发现可领取红包，信息：{packet["message"]},剩余：{packet["remaining"]},内容：{dqpacknr}*{packet["currencies"][0]["amount"]}")
-                
+                if not packet["hasPassword"] or not 有默认密码:
                 # 尝试领取红包
-                resp_claim = requests.post(
+                     resp_claim = requests.post(
                     "https://simpbbs.gonm2.cn/api/redpackets/claim",
                     data={"id": packet_id},
                     headers=headers,
                     verify=False
-                )
+                    )
+                else:
+                    resp_claim = requests.post(
+                    "https://simpbbs.gonm2.cn/api/redpackets/claim",
+                    data=json.dumps({"id": packet_id,"redPacketPassword":默认密码}),
+                    headers=headers,
+                    verify=False
+                    )
+                
                 result = resp_claim.json()
                     
                 # 判断是否领取是吧
                 if result.get("error"):
-                    print(f"错误，{result}")
+                    if not packet["hasPassword"] or result["message"]!="invalidPassword":
+                        print(f"错误，{result}")
+                    else:
+                        print("密码错误，我没招了")
                     
                     continue  # 跳过当前红包，继续下一个
                 dqpacknr=result["currencyId"]
