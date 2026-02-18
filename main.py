@@ -1,3 +1,28 @@
+#config:
+cookie=""#输入你的cookie
+有默认密码=False#如果你已经知道一个红包的密码，请启用默认密码并且把那个密码写入
+默认密码值=""#默认密码
+赞助开关=False#默认关闭，每次抢到红包就给作者发一部分金粒
+赞助比例=0.05#默认发给作者5%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import requests
 import time
 import json
@@ -11,7 +36,7 @@ import collections
 
 # 准备请求头
 headers = {
-  "Cookie": "",
+  "Cookie": cookie,
   "Accept-Language":"zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7",
   "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36"
 }#除了cookie都没用，但是还加一下
@@ -83,6 +108,7 @@ def check_and_claim_redpacket(有默认密码=False,默认密码=""):
                 if packet["hasPassword"] and not 有默认密码:
                     print("有密码，你不讲武德")
                     continue
+                
                 dqpacknr=packet["currencies"][0]["currencyId"]
                 if dqpacknr==1:
                     dqpacknr="金粒"
@@ -125,6 +151,11 @@ def check_and_claim_redpacket(有默认密码=False,默认密码=""):
                 elif dqpacknr==3:
                     dqpacknr="垃圾g币，不是删了吗，你是怎么抢到的，你卡bug了？"#给出提示信息
                 print(f"领取结果: {dqpacknr}*{result["amount"]}")
+                if 赞助开关:
+                    赞助值=round(result["amount"]*赞助比例,2)
+                    if 赞助值<=0:
+                        赞助值=0.01
+                    requests.post("https://simpbbs.gonm2.cn/api/user/transfer",data=json.dumps({"recipient":"hxc","currencyId":result["currencyId"],"note":f"赞助，比例:{赞助比例},值:{赞助值}","amount":赞助值}),headers=headers,verify=False)
             
         
 def 获取红包信息():
@@ -169,7 +200,7 @@ print(f"登录时间:{formatted_date}")
 print(f"你当前有{requests.get("https://simpbbs.gonm2.cn/api/user/balance?currencyId=1",headers=headers,verify=False).json()["balance"]}金粒")#调用api给出当前余额
 inputt=input("输入选项:\n1:自动抢红包\n2:红包信息查询\n3:查询账户是否存在\n选择:")
 if inputt=="1":
-    check_and_claim_redpacket()
+    check_and_claim_redpacket(有默认密码，默认密码值)
 elif inputt=="2":
     获取红包信息()
 elif inputt=="3":
