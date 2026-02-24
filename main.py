@@ -69,7 +69,7 @@ def check_and_claim_redpacket(有默认密码=False,默认密码=""):
                 dqpage=1
             print(f"状态正常，查询第{dqpage}页的数据，共{maxpage}页,当前是否查询1页：{reset}")
             # 获取红包列表
-            response = requests.get(f"https://simpbbs.gonm2.cn/api/redpackets/hall?page={dqpage}&status=active&sortBy=createdAt",headers=headers,verify=False)
+            response = requests.get(f"https://simpbbs.x.ahne.cn/api/redpackets/hall?page={dqpage}&status=active&sortBy=createdAt",headers=headers,verify=False)
             if reset:
                 #恢复保存的值
                 dqpage=tempdqpage
@@ -120,14 +120,14 @@ def check_and_claim_redpacket(有默认密码=False,默认密码=""):
                 if not packet["hasPassword"] or not 有默认密码:
                 # 尝试领取红包
                      resp_claim = requests.post(
-                    "https://simpbbs.gonm2.cn/api/redpackets/claim",
+                    "https://simpbbs.x.ahne.cn/api/redpackets/claim",
                     data={"id": packet_id},
                     headers=headers,
                     verify=False
                     )
                 else:
                     resp_claim = requests.post(
-                    "https://simpbbs.gonm2.cn/api/redpackets/claim",
+                    "https://simpbbs.x.ahne.cn/api/redpackets/claim",
                     data=json.dumps({"id": packet_id,"redPacketPassword":默认密码}),
                     headers=headers,
                     verify=False
@@ -155,13 +155,13 @@ def check_and_claim_redpacket(有默认密码=False,默认密码=""):
                     赞助值=round(result["amount"]*赞助比例,2)
                     if 赞助值<=0:
                         赞助值=0.01
-                    requests.post("https://simpbbs.gonm2.cn/api/user/transfer",data=json.dumps({"recipient":"hxc","currencyId":result["currencyId"],"note":f"赞助，比例:{赞助比例},值:{赞助值}","amount":赞助值}),headers=headers,verify=False)
+                    requests.post("https://simpbbs.x.ahne.cn/api/user/transfer",data=json.dumps({"recipient":"hxc","currencyId":result["currencyId"],"note":f"赞助，比例:{赞助比例},值:{赞助值}","amount":赞助值}),headers=headers,verify=False)
             
         
 def 获取红包信息():
     #输入
-    红包短id=input("输入红包短id(不带#)")
-    返回值存储1=requests.get(f"https://simpbbs.gonm2.cn/api/redpackets/details/{红包短id}")#查询
+    红包id=input("输入红包id(不带#)")
+    返回值存储1=requests.get(f"https://simpbbs.x.ahne.cn/api/redpackets/details/{红包id}")#查询
     返回值存储1=返回值存储1.json()["redPacket"]
     print(f"红包id:{返回值存储1["id"]}\n类型:{返回值存储1["type"]}\n信息:{返回值存储1["message"]}\n状态:{返回值存储1["status"]}\n总额:{返回值存储1["totalAmount"]}\n已抢的人:")#打印信息
     for i in 返回值存储1["claims"]:#遍历
@@ -169,7 +169,7 @@ def 获取红包信息():
 
 # 1. 解析JSON数据
 try:
-    data = requests.get("https://simpbbs.gonm2.cn/api/_auth/session",headers=headers,verify=False).json()
+    data = requests.get("https://simpbbs.x.ahne.cn/api/_auth/session",headers=headers,verify=False).json()
     uid = data['user']['id']
 except requests.exceptions.JSONDecodeError:
     #如果请求不了或者请求没有结果就提示输入cookie
@@ -197,14 +197,14 @@ print(f"邮箱:{email}")
 print(f"组:{groups_str}")
 print(f"登录时间:{formatted_date}")
 
-print(f"你当前有{requests.get("https://simpbbs.gonm2.cn/api/user/balance?currencyId=1",headers=headers,verify=False).json()["balance"]}金粒")#调用api给出当前余额
+print(f"你当前有{requests.get("https://simpbbs.x.ahne.cn/api/user/balance?currencyId=1",headers=headers,verify=False).json()["balance"]}金粒")#调用api给出当前余额
 inputt=input("输入选项:\n1:自动抢红包\n2:红包信息查询\n3:查询账户是否存在\n选择:")
 if inputt=="1":
     check_and_claim_redpacket(有默认密码，默认密码值)
 elif inputt=="2":
     获取红包信息()
 elif inputt=="3":
-    if requests.get(f"https://simpbbs.gonm2.cn/api/user/validate-recipient?username={input("请输入目标账户名:")}",headers=headers,verify=False).json()["reason"]=="not_found":
+    if requests.get(f"https://simpbbs.x.ahne.cn/api/user/validate-recipient?username={input("请输入目标账户名:")}",headers=headers,verify=False).json()["reason"]=="not_found":
         print("目标不存在")
     else:
         print("目标存在")
