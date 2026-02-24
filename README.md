@@ -1,5 +1,4 @@
-开始:
-  下载后在cookie:""处输入cookie
-todo:
-    未开始红包不添加到缓存里（因为它不提示开始时间)
+# 开始:
+  下载后安装requests库然后在cookie:""处输入cookie
+# todo:
     改成异步抢红包
