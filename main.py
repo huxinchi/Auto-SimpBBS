@@ -200,7 +200,7 @@ print(f"登录时间:{formatted_date}")
 print(f"你当前有{requests.get("https://simpbbs.x.ahne.cn/api/user/balance?currencyId=1",headers=headers,verify=False).json()["balance"]}金粒")#调用api给出当前余额
 inputt=input("输入选项:\n1:自动抢红包\n2:红包信息查询\n3:查询账户是否存在\n选择:")
 if inputt=="1":
-    check_and_claim_redpacket(有默认密码，默认密码值)
+    check_and_claim_redpacket(有默认密码,默认密码值)
 elif inputt=="2":
     获取红包信息()
 elif inputt=="3":
